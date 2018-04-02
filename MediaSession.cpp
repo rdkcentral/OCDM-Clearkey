@@ -38,20 +38,6 @@ namespace CDMi {
 static media::KeyIdAndKeyPairs g_keys;
 uint32_t MediaKeySession::s_sessionCnt = 10;
 
-
-static void hex_print(const void *pv, size_t len) {
-  const unsigned char *p = (const unsigned char*)pv;
-  if (!pv)
-    printf("NULL");
-  else
-  {
-    size_t i = 0;
-    for (; i<len; ++i)
-      printf("%02X ", *p++);
-  }
-  printf("\n");
-}
-
 static std::string keyIdAndKeyPairsToJSON(media::KeyIdAndKeyPairs *g_keys) {
   /* FIXME: This JSON consturctor is for proof of concept only.
   * We need to add a proper JSON library.
@@ -125,6 +111,7 @@ void* MediaKeySession::RunThread(int f_i) {
   } else {
     m_piCallback->OnKeyReady();
   }
+  return (nullptr);
 }
 
 CDMi_RESULT MediaKeySession::Load(void) {
@@ -159,7 +146,9 @@ CDMi_RESULT MediaKeySession::Remove(void) {
   return CDMi_S_FALSE;
 }
 
-CDMi_RESULT MediaKeySession::Close(void) {}
+CDMi_RESULT MediaKeySession::Close(void) {
+  return CDMi_SUCCESS;
+}
 
 const char* MediaKeySession::GetSessionId(void) const {
   cout <<"Inside GetSessionId"<< endl;
@@ -244,5 +233,6 @@ CDMi_RESULT MediaKeySession::ReleaseClearContent(
     const uint32_t  f_cbClearContentOpaque,
     uint8_t  *f_pbClearContentOpaque ){
   free(f_pbClearContentOpaque);
+  return CDMi_SUCCESS;
 }
 }  // namespace CDMi
