@@ -139,7 +139,7 @@ void MediaKeySession::Update(
     return;
   }
   keys_updated = keyIdAndKeyPairsToJSON(&g_keys);
-  m_piCallback->OnKeyStatusUpdate(keys_updated.data());
+  m_piCallback->OnKeyStatusUpdate(keys_updated.data(), reinterpret_cast<const uint8_t*>((g_keys[0].second).data()), (g_keys[0].second).size());
 }
 
 CDMi_RESULT MediaKeySession::Remove(void) {
