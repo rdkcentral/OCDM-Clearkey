@@ -19,7 +19,7 @@
 
 #ifndef OPENCDM_CDMI_STUB_JSON_WEB_KEY_H
 #define OPENCDM_CDMI_STUB_JSON_WEB_KEY_H
-#include  "keypairs.h"
+#include  "KeyPairs.h"
 
 namespace media{
 
@@ -43,9 +43,8 @@ const char kPersistentReleaseMessageSession[] = "persistent-release-message";
 // a valid JWK Set, then true is returned and |keys| and |session_type| are
 // updated to contain the values found. Otherwise return false.
 bool ExtractKeysFromJWKSet(const std::string& jwk_set,
-                                        KeyIdAndKeyPairs* keys,
-                                        int session_type);
-
+    KeyIdAndKeyPairs* keys,
+    int session_type);
 
 }//namespace media
 #endif
