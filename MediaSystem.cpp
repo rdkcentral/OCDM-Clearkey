@@ -38,9 +38,15 @@ public:
         const uint8_t *f_pbCDMData,
         uint32_t f_cbCDMData,
         IMediaKeySession **f_ppiMediaKeySession) {
-        *f_ppiMediaKeySession = new CDMi::MediaKeySession();
 
-        CDMi_RESULT dr = poMediaKeySession->Init(licenseType,
+        CDMi_RESULT dr = CDMi_S_FALSE;
+        MediaKeySession *poMediaKeySession = nullptr;
+
+        *f_ppiMediaKeySession = nullptr;
+
+        poMediaKeySession = new MediaKeySession();
+
+        dr = poMediaKeySession->Init(licenseType,
              f_pwszInitDataType,
              f_pbInitData,
              f_cbInitData,
@@ -48,8 +54,12 @@ public:
              f_cbCDMData);
 
 
-        if (dr != CDMi_SUCCESS)
-            delete *f_ppiMediaKeySession;
+        if (dr != CDMi_SUCCESS) {
+            delete poMediaKeySession;
+        }
+        else {
+            *f_ppiMediaKeySession = poMediaKeySession;
+        }
 
         return dr;
     }
@@ -69,7 +79,7 @@ public:
     }
 };
 
-static SystemFactoryType<ClearKey> g_instance({"video/x-h264", "audio/mpeg"});
+static SystemFactoryType<ClearKey> g_instance({"video/mock"});
 
 }  // namespace CDMi
 

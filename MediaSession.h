@@ -17,9 +17,11 @@
 
 #include "cdmi.h"
 
-namespace CDMi {
+namespace CDMi
+{
 
-class MediaKeySession : public IMediaKeySession {
+class MediaKeySession : public IMediaKeySession
+{
 public:
     MediaKeySession(void);
     virtual ~MediaKeySession(void);

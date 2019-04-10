@@ -21,7 +21,7 @@ set(DRM_PLUGIN_LIBS
 set(DRM_PLUGIN_SOURCES 
     MediaSession.cpp 
     MediaSystem.cpp
-    JSONWebKey.cpp
+    json_web_key.cpp
     jsmn/jsmn.c
     )
 
