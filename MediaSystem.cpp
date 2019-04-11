@@ -38,10 +38,13 @@ public:
         const uint8_t *f_pbCDMData,
         uint32_t f_cbCDMData,
         IMediaKeySession **f_ppiMediaKeySession) {
+        CDMi_RESULT dr = CDMi_S_FALSE;
+        MediaKeySession *poMediaKeySession = nullptr;
+        *f_ppiMediaKeySession = nullptr;
 
-        *f_ppiMediaKeySession = new CDMi::MediaKeySession();
+        poMediaKeySession = new MediaKeySession();
 
-        CDMi_RESULT dr = poMediaKeySession->Init(licenseType,
+        dr = poMediaKeySession->Init(licenseType,
              f_pwszInitDataType,
              f_pbInitData,
              f_cbInitData,
@@ -50,7 +53,9 @@ public:
 
 
         if (dr != CDMi_SUCCESS)
-            delete *f_ppiMediaKeySession;
+            delete poMediaKeySession;
+        else
+            *f_ppiMediaKeySession = poMediaKeySession;
 
         return dr;
     }
