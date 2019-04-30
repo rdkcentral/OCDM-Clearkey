@@ -17,11 +17,9 @@
 
 #include "cdmi.h"
 
-namespace CDMi
-{
+namespace CDMi {
 
-class MediaKeySession : public IMediaKeySession
-{
+class MediaKeySession : public IMediaKeySession {
 public:
     MediaKeySession(void);
     virtual ~MediaKeySession(void);
@@ -40,6 +38,9 @@ public:
     virtual CDMi_RESULT Remove();
 
     virtual CDMi_RESULT Close(void);
+
+    virtual void UninitializeContext() {
+    }
 
     virtual const char *GetSessionId(void) const;
 
@@ -65,7 +66,8 @@ public:
         uint32_t *f_pcbOpaqueClearContent,
         uint8_t **f_ppbOpaqueClearContent,
         const uint8_t keyIdLength,
-        const uint8_t* keyId);
+        const uint8_t* keyId,
+        bool initWithLast15);
 
     virtual CDMi_RESULT ReleaseClearContent(
         const uint8_t *f_pbSessionKey,

@@ -31,6 +31,7 @@ public:
     }
 
     virtual CDMi_RESULT CreateMediaKeySession(
+        const std::string & keySystem,
         int32_t licenseType,
         const char *f_pwszInitDataType,
         const uint8_t *f_pbInitData,
@@ -38,10 +39,8 @@ public:
         const uint8_t *f_pbCDMData,
         uint32_t f_cbCDMData,
         IMediaKeySession **f_ppiMediaKeySession) {
-
         CDMi_RESULT dr = CDMi_S_FALSE;
         MediaKeySession *poMediaKeySession = nullptr;
-
         *f_ppiMediaKeySession = nullptr;
 
         poMediaKeySession = new MediaKeySession();
@@ -54,12 +53,10 @@ public:
              f_cbCDMData);
 
 
-        if (dr != CDMi_SUCCESS) {
+        if (dr != CDMi_SUCCESS)
             delete poMediaKeySession;
-        }
-        else {
+        else
             *f_ppiMediaKeySession = poMediaKeySession;
-        }
 
         return dr;
     }
@@ -79,7 +76,7 @@ public:
     }
 };
 
-static SystemFactoryType<ClearKey> g_instance({"video/mock"});
+static SystemFactoryType<ClearKey> g_instance({"video/x-h264", "audio/mpeg"});
 
 }  // namespace CDMi
 
