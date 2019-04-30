@@ -46,5 +46,8 @@ bool ExtractKeysFromJWKSet(const std::string& jwk_set,
     KeyIdAndKeyPairs* keys,
     int session_type);
 
+std::string Base64Encode(char const* bytesToEncode, unsigned int inLen);
+
+std::string Base64Decode(std::string const& encodedString);
 }//namespace media
 #endif

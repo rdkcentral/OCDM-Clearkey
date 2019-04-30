@@ -56,60 +56,97 @@ namespace media{
    René Nyffenegger rene.nyffenegger@adp-gmbh.ch
 
 */
-static const std::string base64_chars =
+const std::string Base64Chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
     "abcdefghijklmnopqrstuvwxyz"
     "0123456789+/";
 
-static inline bool is_base64(unsigned char c) {
+inline bool IsBase64(unsigned char c) {
     return (isalnum(c) || (c == '+') || (c == '/'));
 }
 
-std::string base64_decode(std::string const& encoded_string) {
-    int in_len = encoded_string.size();
+std::string Base64Encode(char const* bytesToEncode, unsigned int len) {
+    std::string ret;
     int i = 0;
     int j = 0;
-    int in_ = 0;
-    unsigned char char_array_4[4], char_array_3[3];
+    unsigned char charArray3[3];
+    unsigned char charArray4[4];
+
+    while (len--) {
+        charArray3[i++] = *(bytesToEncode++);
+        if (i == 3) {
+            charArray4[0] = (charArray3[0] & 0xfc) >> 2;
+            charArray4[1] = ((charArray3[0] & 0x03) << 4) + ((charArray3[1] & 0xf0) >> 4);
+            charArray4[2] = ((charArray3[1] & 0x0f) << 2) + ((charArray3[2] & 0xc0) >> 6);
+            charArray4[3] = charArray3[2] & 0x3f;
+
+            for(i = 0; (i <4) ; i++)
+                ret += Base64Chars[charArray4[i]];
+            i = 0;
+        }
+    }
+
+    if (i)
+    {
+        for(j = i; j < 3; j++)
+            charArray3[j] = '\0';
+
+        charArray4[0] = ( charArray3[0] & 0xfc) >> 2;
+        charArray4[1] = ((charArray3[0] & 0x03) << 4) + ((charArray3[1] & 0xf0) >> 4);
+        charArray4[2] = ((charArray3[1] & 0x0f) << 2) + ((charArray3[2] & 0xc0) >> 6);
+
+        for (j = 0; (j < i + 1); j++)
+            ret += Base64Chars[charArray4[j]];
+    }
+
+    return ret;
+
+}
+
+std::string Base64Decode(std::string const& encodedString) {
+    int len = encodedString.size();
+    int i = 0;
+    int j = 0;
+    int it = 0;
+    unsigned char charArray4[4], charArray3[3];
     std::string ret;
 
-    while (in_len-- && ( encoded_string[in_] != '=') && is_base64(encoded_string[in_])) {
-        char_array_4[i++] = encoded_string[in_]; in_++;
+    while (len-- && ( encodedString[it] != '=') && IsBase64(encodedString[it])) {
+        charArray4[i++] = encodedString[it]; it++;
         if (i ==4) {
             for (i = 0; i <4; i++)
-                char_array_4[i] = base64_chars.find(char_array_4[i]);
+                charArray4[i] = Base64Chars.find(charArray4[i]);
 
-            char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
-            char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
-            char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+            charArray3[0] = (charArray4[0] << 2) + ((charArray4[1] & 0x30) >> 4);
+            charArray3[1] = ((charArray4[1] & 0xf) << 4) + ((charArray4[2] & 0x3c) >> 2);
+            charArray3[2] = ((charArray4[2] & 0x3) << 6) + charArray4[3];
 
             for (i = 0; (i < 3); i++)
-                ret += char_array_3[i];
+                ret += charArray3[i];
             i = 0;
         }
     }
 
     if (i) {
         for (j = i; j <4; j++)
-            char_array_4[j] = 0;
+            charArray4[j] = 0;
 
         for (j = 0; j <4; j++)
-            char_array_4[j] = base64_chars.find(char_array_4[j]);
+            charArray4[j] = Base64Chars.find(charArray4[j]);
 
-        char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
-        char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
-        char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+        charArray3[0] = (charArray4[0] << 2) + ((charArray4[1] & 0x30) >> 4);
+        charArray3[1] = ((charArray4[1] & 0xf) << 4) + ((charArray4[2] & 0x3c) >> 2);
+        charArray3[2] = ((charArray4[2] & 0x3) << 6) + charArray4[3];
 
-        for (j = 0; (j < i - 1); j++) ret += char_array_3[j];
+        for (j = 0; (j < i - 1); j++) ret += charArray3[j];
     }
-
     return ret;
 }
 
 
 /* Checks equality of two JSON string with a char. Returns 0 if strings
  * equal. */
-static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
+int JsonEq(const char *json, jsmntok_t *tok, const char *s) {
     if (tok->type == JSMN_STRING && (int) strlen(s) == tok->end - tok->start &&
             strncmp(json + tok->start, s, tok->end - tok->start) == 0) {
         return 0;
@@ -117,14 +154,14 @@ static int jsoneq(const char *json, jsmntok_t *tok, const char *s) {
     return -1;
 }
 
-static void fixUpURLSafeBase64(std::string &str)
+void FixUpURLSafeBase64(std::string &str)
 {
-    std::replace( str.begin(), str.end(), '_', '/');
-    std::replace( str.begin(), str.end(), '-', '+');
+    std::replace(str.begin(), str.end(), '_', '/');
+    std::replace(str.begin(), str.end(), '-', '+');
 }
 
-static bool convertStringsToKeyPair(KeyIdAndKeyPair* pair, std::string key,
-        std::string keyId)
+bool ConvertStringsToKeyPair(KeyIdAndKeyPair* pair, std::string key,
+    std::string keyId)
 {
     size_t padding;
     std::string decoded_key, decoded_key_id;
@@ -139,38 +176,38 @@ static bool convertStringsToKeyPair(KeyIdAndKeyPair* pair, std::string key,
     if(padding > 0)
         key.append(padding, kBase64Padding);
 
-    fixUpURLSafeBase64(key);
-    fixUpURLSafeBase64(keyId);
+    FixUpURLSafeBase64(key);
+    FixUpURLSafeBase64(keyId);
 
-    decoded_key = base64_decode(key);
-    decoded_key_id = base64_decode(keyId);
+    decoded_key = Base64Decode(key);
+    decoded_key_id = Base64Decode(keyId);
     *pair = std::make_pair(decoded_key_id, decoded_key);
     return true;
 }
 
-bool ExtractKeysFromJWKSet(const std::string& jwk_set,
-        KeyIdAndKeyPairs* keys,
-        int session_type) {
+bool ExtractKeysFromJWKSet(const std::string& jwkSet,
+    KeyIdAndKeyPairs* keys,
+    int session_type) {
     /*We expect max 128 tokens
      * FIXME: We need a different and safe JSON parser.
      */
     jsmntok_t t[MAX_JSON_TOKENS];
     jsmn_parser parser;
     int result;
-    const char* jchr  = &(jwk_set.c_str()[0]);
+    const char* jchr  = &(jwkSet.c_str()[0]);
 
     std::string algorithm;
     std::string key;
     std::string keyId;
     jsmn_init(&parser);
-    result = jsmn_parse(&parser, jchr, jwk_set.size(), t, sizeof(t)/sizeof(t[0]));
+    result = jsmn_parse(&parser, jchr, jwkSet.size(), t, sizeof(t)/sizeof(t[0]));
 
     if(result<0) {
-        std::cout << "Failed to parse JSON" << jwk_set << std::endl;
+        std::cout << "Failed to parse JSON" << jwkSet << std::endl;
         return false;
     }
 
-    if(jsoneq(jchr, &t[1], kKeysTag)!=0) {
+    if(JsonEq(jchr, &t[1], kKeysTag)!=0) {
         std::cout <<  "Unable to parse JSON. Expected kKeyTag : " << kKeysTag << std::endl;
         return false;
     }
@@ -178,12 +215,12 @@ bool ExtractKeysFromJWKSet(const std::string& jwk_set,
     KeyIdAndKeyPairs local_keys;
     /* Ignore the first 2 tokens */
     for(int i = 2; i < result; i++) {
-        if(jsoneq(jchr, &t[i], kAlgTag) == 0 && (i+1) < MAX_JSON_TOKENS) {
+        if(JsonEq(jchr, &t[i], kAlgTag) == 0 && (i+1) < MAX_JSON_TOKENS) {
             algorithm = std::string(jchr + t[i+1].start, t[i+1].end - t[i+1].start);
             continue;
         }
 
-        if(jsoneq(jchr, &t[i], kKeyTag) == 0 && (i+1) < MAX_JSON_TOKENS) {
+        if(JsonEq(jchr, &t[i], kKeyTag) == 0 && (i+1) < MAX_JSON_TOKENS) {
             if(key.size() != 0) {
                 std::cout << "CDMI supports only one key in JSON message. Got multiple keys." << std::endl;
                 return false;
@@ -192,7 +229,7 @@ bool ExtractKeysFromJWKSet(const std::string& jwk_set,
             continue;
         }
 
-        if(jsoneq(jchr, &t[i], kKeyIdTag) == 0 && (i+1) < MAX_JSON_TOKENS) {
+        if(JsonEq(jchr, &t[i], kKeyIdTag) == 0 && (i+1) < MAX_JSON_TOKENS) {
             if(keyId.size() != 0) {
                 std::cout << "CDMI supports only one keyID in JSON message. Got multiple keys." << std::endl;
                 return false;
@@ -202,7 +239,7 @@ bool ExtractKeysFromJWKSet(const std::string& jwk_set,
         }
     }
     KeyIdAndKeyPair keyPair;
-    convertStringsToKeyPair(&keyPair, key, keyId);
+    ConvertStringsToKeyPair(&keyPair, key, keyId);
     local_keys.push_back(keyPair);
 
     keys->swap(local_keys);

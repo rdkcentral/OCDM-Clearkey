@@ -18,8 +18,10 @@
 
 #include <string>
 #include <vector>
+#include <set>
 
 namespace media {
+typedef std::set<std::string> KeyIds;
 typedef std::pair<std::string, std::string> KeyIdAndKeyPair;
 typedef std::vector<KeyIdAndKeyPair> KeyIdAndKeyPairs;
 }
