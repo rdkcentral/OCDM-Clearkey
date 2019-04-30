@@ -179,8 +179,9 @@ CDMi_RESULT MediaKeySession::Decrypt(
     uint32_t f_cbData,
     uint32_t *f_pcbOpaqueClearContent,
     uint8_t **f_ppbOpaqueClearContent,
-    const uint8_t /* keyIdLength */,
-    const uint8_t* /* keyId */)
+    const uint8_t, // keyIdLength
+    const uint8_t*, // keyId
+    bool initWithLast15)
 {
     AES_KEY aes_key;
     uint8_t *out; /* Faked secure buffer */
@@ -196,7 +197,7 @@ CDMi_RESULT MediaKeySession::Decrypt(
 
     if (!f_pcbOpaqueClearContent) {
         cout << "ERROR: f_pcbOpaqueClearContent is NULL" << endl;
-        return -1;
+        return CDMi_S_FALSE;
     }
 
     out = (uint8_t*) malloc(f_cbData * sizeof(uint8_t));
@@ -225,7 +226,7 @@ CDMi_RESULT MediaKeySession::Decrypt(
     return CDMi_SUCCESS;
 fail:
     free(out);
-    return -1;
+    return CDMi_S_FALSE;
 }
 
 CDMi_RESULT MediaKeySession::ReleaseClearContent(
