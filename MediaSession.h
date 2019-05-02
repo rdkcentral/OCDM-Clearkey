@@ -39,9 +39,6 @@ public:
 
     virtual CDMi_RESULT Close(void);
 
-    virtual void UninitializeContext() {
-    }
-
     virtual const char *GetSessionId(void) const;
 
     virtual const char *GetKeySystem(void) const;
