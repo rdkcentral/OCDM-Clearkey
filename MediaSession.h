@@ -16,18 +16,19 @@
 #pragma once
 
 #include "cdmi.h"
+#include "JSONWebKey.h"
+#include "KeyPairs.h"
 
 namespace CDMi {
 
 class MediaKeySession : public IMediaKeySession {
 public:
-    MediaKeySession(void);
-    virtual ~MediaKeySession(void);
+    MediaKeySession(const uint8_t *f_pbInitData, uint32_t f_cbInitData);
+    virtual ~MediaKeySession();
 
+// MediaKeySession overrides
     virtual void Run(
         const IMediaKeySessionCallback *f_piMediaKeySessionCallback);
-
-    void* RunThread(int f_i);
 
     virtual CDMi_RESULT Load();
 
@@ -45,14 +46,6 @@ public:
     virtual const char *GetSessionId(void) const;
 
     virtual const char *GetKeySystem(void) const;
-
-    CDMi_RESULT Init(
-        int32_t licenseType,
-        const char *f_pwszInitDataType,
-        const uint8_t *f_pbInitData,
-        uint32_t f_cbInitData,
-        const uint8_t *f_pbCDMData,
-        uint32_t f_cbCDMData);
 
     CDMi_RESULT Decrypt(
         const uint8_t *f_pbSessionKey,
@@ -81,12 +74,18 @@ private:
 
     static void* _CallRunThread2(
         void *arg);
+
+    void* RunThread(int f_i);
     static const char* CreateSessionId();
+    bool ParseClearKeyInitializationData(const std::string& initData, std::string* output);
+    std::string KeyIdsToJSON();
 
 private:
     const char *m_sessionId;
     static uint32_t s_sessionCnt;
     IMediaKeySessionCallback *m_piCallback;
+    media::KeyIdAndKeyPairs m_keys;
+    media::KeyIds m_kids;
 };
 
 }  // namespace CDMi

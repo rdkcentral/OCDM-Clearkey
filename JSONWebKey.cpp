@@ -144,7 +144,7 @@ std::string Base64Decode(std::string const& encodedString) {
 }
 
 
-/* Checks equality of two JSON string with a char. Returns 0 if strings
+/* Checks equality of two JSON string with a char. Returns 0 if strings are
  * equal. */
 int JsonEq(const char *json, jsmntok_t *tok, const char *s) {
     if (tok->type == JSMN_STRING && (int) strlen(s) == tok->end - tok->start &&
@@ -160,11 +160,11 @@ void FixUpURLSafeBase64(std::string &str)
     std::replace(str.begin(), str.end(), '-', '+');
 }
 
-bool ConvertStringsToKeyPair(KeyIdAndKeyPair* pair, std::string key,
+bool ConvertStringsToKeyPair(KeyIdAndKeyPairs& keys, std::string key,
     std::string keyId)
 {
     size_t padding;
-    std::string decoded_key, decoded_key_id;
+    std::string decodedKey, decodedKeyId;
     /* Chromium removes the padding strings from the B64 strings. We need
      * to append them for compatibility with the B64 parsers */
     padding = keyId.length()%4;
@@ -179,15 +179,15 @@ bool ConvertStringsToKeyPair(KeyIdAndKeyPair* pair, std::string key,
     FixUpURLSafeBase64(key);
     FixUpURLSafeBase64(keyId);
 
-    decoded_key = Base64Decode(key);
-    decoded_key_id = Base64Decode(keyId);
-    *pair = std::make_pair(decoded_key_id, decoded_key);
+    decodedKey = Base64Decode(key);
+    decodedKeyId = Base64Decode(keyId);
+    keys[decodedKeyId] = decodedKey;
     return true;
 }
 
 bool ExtractKeysFromJWKSet(const std::string& jwkSet,
-    KeyIdAndKeyPairs* keys,
-    int session_type) {
+    KeyIdAndKeyPairs& keys,
+    int sessionType) {
     /*We expect max 128 tokens
      * FIXME: We need a different and safe JSON parser.
      */
@@ -238,11 +238,7 @@ bool ExtractKeysFromJWKSet(const std::string& jwkSet,
             continue;
         }
     }
-    KeyIdAndKeyPair keyPair;
-    ConvertStringsToKeyPair(&keyPair, key, keyId);
-    local_keys.push_back(keyPair);
-
-    keys->swap(local_keys);
+    ConvertStringsToKeyPair(keys, key, keyId);
     return true;
 }
 }

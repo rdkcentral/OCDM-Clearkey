@@ -43,7 +43,7 @@ const char kPersistentReleaseMessageSession[] = "persistent-release-message";
 // a valid JWK Set, then true is returned and |keys| and |session_type| are
 // updated to contain the values found. Otherwise return false.
 bool ExtractKeysFromJWKSet(const std::string& jwk_set,
-    KeyIdAndKeyPairs* keys,
+    KeyIdAndKeyPairs& keys,
     int session_type);
 
 std::string Base64Encode(char const* bytesToEncode, unsigned int inLen);
