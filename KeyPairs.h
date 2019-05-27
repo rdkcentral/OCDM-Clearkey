@@ -17,10 +17,11 @@
 #define OPENCDM_CDMI_STUB_KEYPAIRS_H
 
 #include <string>
-#include <vector>
+#include <set>
+#include <map>
 
 namespace media {
-typedef std::pair<std::string, std::string> KeyIdAndKeyPair;
-typedef std::vector<KeyIdAndKeyPair> KeyIdAndKeyPairs;
+typedef std::set<std::string> KeyIds;
+typedef std::map<std::string, std::string> KeyIdAndKeyPairs;
 }
 #endif

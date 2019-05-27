@@ -39,26 +39,9 @@ public:
         const uint8_t *f_pbCDMData,
         uint32_t f_cbCDMData,
         IMediaKeySession **f_ppiMediaKeySession) {
-        CDMi_RESULT dr = CDMi_S_FALSE;
-        MediaKeySession *poMediaKeySession = nullptr;
-        *f_ppiMediaKeySession = nullptr;
+        *f_ppiMediaKeySession = new CDMi::MediaKeySession(f_pbInitData, f_cbInitData);
 
-        poMediaKeySession = new MediaKeySession();
-
-        dr = poMediaKeySession->Init(licenseType,
-             f_pwszInitDataType,
-             f_pbInitData,
-             f_cbInitData,
-             f_pbCDMData,
-             f_cbCDMData);
-
-
-        if (dr != CDMi_SUCCESS)
-            delete poMediaKeySession;
-        else
-            *f_ppiMediaKeySession = poMediaKeySession;
-
-        return dr;
+        return CDMi_SUCCESS;
     }
 
     virtual CDMi_RESULT SetServerCertificate(
@@ -70,7 +53,8 @@ public:
     virtual CDMi_RESULT DestroyMediaKeySession(
         IMediaKeySession *f_piMediaKeySession) {
 
-        delete f_piMediaKeySession;
+        if(f_piMediaKeySession)
+            delete f_piMediaKeySession;
 
         return CDMi_SUCCESS;
     }
