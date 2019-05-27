@@ -163,7 +163,6 @@ CDMi_RESULT MediaKeySession::Decrypt(
     uint8_t *out; /* Faked secure buffer */
     const char *key;
 
-    cout << "Inside MediaKeySession::Decrypt "<< endl;
     uint8_t ivec[AES_BLOCK_SIZE] = { 0 };
     uint8_t ecount_buf[AES_BLOCK_SIZE] = { 0 };
     unsigned int block_offset = 0;
