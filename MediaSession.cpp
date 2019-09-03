@@ -94,8 +94,7 @@ void* MediaKeySession::RunThread(int f_i) {
     if (f_i == 1) {
         std::string message = KeyIdsToJSON();
         m_piCallback->OnKeyMessage((const uint8_t*)message.c_str(), message.size(), const_cast<char*>(DESTINATION_URL_PLACEHOLDER));
-    } else
-        m_piCallback->OnKeyReady();
+    }
     return (nullptr);
 }
 
@@ -122,8 +121,11 @@ void MediaKeySession::Update(
         cout << "#mediakeysession.Run: err: could not create thread" << endl;
         return;
     }
-    if (m_piCallback)
-        m_piCallback->OnKeyStatusUpdate("KeyUsable", nullptr, 0);
+    if (m_piCallback) {
+        for (auto& keyIdWithKey : m_keys) {
+            m_piCallback->OnKeyStatusUpdate("KeyUsable", reinterpret_cast<const uint8_t*>(keyIdWithKey.first.c_str()), keyIdWithKey.first.size());
+        m_piCallback->OnKeyStatusesUpdated();
+    }
 }
 
 CDMi_RESULT MediaKeySession::Remove(void) {
