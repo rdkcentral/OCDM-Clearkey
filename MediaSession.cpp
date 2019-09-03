@@ -122,7 +122,7 @@ void MediaKeySession::Update(
         return;
     }
     if (m_piCallback) {
-        for (auto& keyIdWithKey : m_keys) {
+        for (auto& keyIdWithKey : m_keys)
             m_piCallback->OnKeyStatusUpdate("KeyUsable", reinterpret_cast<const uint8_t*>(keyIdWithKey.first.c_str()), keyIdWithKey.first.size());
         m_piCallback->OnKeyStatusesUpdated();
     }
