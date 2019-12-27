@@ -7,11 +7,18 @@ set(DRM_PLUGIN_NAME "ClearKey")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
+option(OPTEE_AES_DECRYPTOR "Enable AES Decryption on OP-TEE environment" OFF)
+
 if(NOT NAMESPACE)
    set(NAMESPACE "WPEFramework")
 endif()
 
+if(OPTEE_AES_DECRYPTOR)
+find_package(OPTEEClearKey REQUIRED)
+add_compile_definitions(OPTEE_AES128)
+else()
 find_package(ClearKey REQUIRED)
+endif()
 
 file(GLOB DRM_PLUGIN_INCLUDES *.h)
 
