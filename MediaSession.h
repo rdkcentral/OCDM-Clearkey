@@ -75,6 +75,10 @@ private:
     void* RunThread(int f_i);
     static const char* CreateSessionId();
     bool ParseClearKeyInitializationData(const std::string& initData, std::string* output);
+
+    bool ParseCENCInitData(const std::string& initData, std::string* output);
+    bool ParseKeyIdsInitData(const std::string& initData, std::string* output);
+
     std::string KeyIdsToJSON();
 
 private:

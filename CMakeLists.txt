@@ -34,7 +34,10 @@ set(DRM_PLUGIN_SOURCES
 
 # add the library
 add_library(${DRM_PLUGIN_NAME} SHARED ${DRM_PLUGIN_SOURCES})
-target_include_directories(${DRM_PLUGIN_NAME} PRIVATE ${CEARKEY_INCLUDE_DIRS} "./jsmn")
+target_include_directories(${DRM_PLUGIN_NAME}
+    PRIVATE
+    ${CMAKE_SYSROOT}/usr/include/${NAMESPACE}
+    ${CEARKEY_INCLUDE_DIRS} "./jsmn")
 target_link_libraries(${DRM_PLUGIN_NAME} ${DRM_PLUGIN_LIBS})
 set_target_properties(${DRM_PLUGIN_NAME} PROPERTIES SUFFIX ".drm")
 set_target_properties(${DRM_PLUGIN_NAME} PROPERTIES PREFIX "")
