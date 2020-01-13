@@ -18,12 +18,20 @@
 
 #include <assert.h>
 #include <iostream>
+#ifdef OPTEE_AES128
+#include <aes_crypto.h>
+#else
 #include <openssl/aes.h>
 #include <openssl/evp.h>
+#endif
 #include <pthread.h>
 #include <sstream>
 #include <string>
 #include <string.h>
+
+#ifdef OPTEE_AES128
+#define AES_BLOCK_SIZE CTR_AES_BLOCK_SIZE
+#endif
 
 #define DESTINATION_URL_PLACEHOLDER "http://no-valid-license-server"
 #define NYI_KEYSYSTEM "keysystem-placeholder"
@@ -34,6 +42,9 @@ using namespace std;
 namespace CDMi {
 
 uint32_t MediaKeySession::s_sessionCnt = 10;
+#ifdef OPTEE_AES128
+static uint16_t tee_session_init = 0;
+#endif
 
 const char* MediaKeySession::CreateSessionId() {
     stringstream strs;
@@ -56,9 +67,23 @@ MediaKeySession::MediaKeySession(const uint8_t *f_pbInitData, uint32_t f_cbInitD
 
     if (!ParseClearKeyInitializationData(initData, &clearKeyInitData))
         clearKeyInitData = initData;
+#ifdef OPTEE_AES128
+    else {
+        if(!tee_session_init) {
+            TEE_crypto_init();
+            std::cout << "ClearKey CDMi: TEE initialized." << std::endl;
+        }
+        tee_session_init++;
+     }
+#endif
 }
 
 MediaKeySession::~MediaKeySession() {
+#ifdef OPTEE_AES128
+    tee_session_init--;
+    if(tee_session_init == 0)
+        TEE_crypto_close();
+#endif
 }
 
 void MediaKeySession::Run(const IMediaKeySessionCallback *f_piMediaKeySessionCallback) {
@@ -161,7 +186,6 @@ CDMi_RESULT MediaKeySession::Decrypt(
     const uint8_t* keyId,
     bool initWithLast15) {
     std::string kid((const char*)keyId, keyIdLength);
-    AES_KEY aesKey;
     uint8_t *out; /* Faked secure buffer */
     const char *key;
 
@@ -177,23 +201,33 @@ CDMi_RESULT MediaKeySession::Decrypt(
         return CDMi_S_FALSE;
     }
 
-    out = (uint8_t*) malloc(f_cbData * sizeof(uint8_t));
-
     if (m_keys.size() != 1)
         cout << "FIXME: We support only one key at the moment. Number keys: " << m_keys.size()<< endl;
 
     if (m_keys[kid].size() != K_DECRYPTION_KEY_SIZE) {
         cout << "ERROR: Wrong key size" << endl;
-        goto fail;
+        return CDMi_S_FALSE;
     }
+
+    /* complete all validation and create memory for out data */
+    out = (uint8_t*) malloc(f_cbData * sizeof(uint8_t));
 
     key = m_keys[kid].c_str();
 
-    AES_set_encrypt_key(reinterpret_cast<const unsigned char*>(key), strlen(key) * 8, &aesKey);
-
     memcpy(&(ivec[0]), f_pbIV, f_cbIV);
 
+#ifdef OPTEE_AES128
+    int result = TEE_AES_ctr128_encrypt(f_pbData, out, f_cbData, key, ivec, ecount_buf, &block_offset, 0, false/*secure on/off*/);
+    if(result != CDMi_SUCCESS) {
+        std::cout << "ClearKey CDMi: Failure: On Decryption. result = " << result << std::endl;
+        goto fail;
+    }
+#else
+    AES_KEY aesKey;
+    AES_set_encrypt_key(reinterpret_cast<const unsigned char*>(key), strlen(key) * 8, &aesKey);
+
     AES_ctr128_encrypt(reinterpret_cast<const unsigned char*>(f_pbData), out, f_cbData, &aesKey, ivec, ecount_buf, &block_offset);
+#endif
 
     /* Return clear content */
     *f_pcbOpaqueClearContent = f_cbData;
