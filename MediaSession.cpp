@@ -194,7 +194,7 @@ CDMi_RESULT MediaKeySession::Decrypt(
     unsigned int block_offset = 0;
 
 
-    assert(f_cbIV <  AES_BLOCK_SIZE);
+    assert(f_cbIV <= AES_BLOCK_SIZE);
 
     if (!f_pcbOpaqueClearContent) {
         cout << "ERROR: f_pcbOpaqueClearContent is NULL" << endl;
