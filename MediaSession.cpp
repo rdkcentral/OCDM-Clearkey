@@ -28,6 +28,7 @@
 #include <sstream>
 #include <string>
 #include <string.h>
+#include <core/core.h>
 
 #ifdef OPTEE_AES128
 #define AES_BLOCK_SIZE CTR_AES_BLOCK_SIZE
@@ -38,6 +39,7 @@
 #define K_DECRYPTION_KEY_SIZE 16
 
 using namespace std;
+using namespace WPEFramework;
 
 namespace CDMi {
 
@@ -265,6 +267,51 @@ std::string MediaKeySession::KeyIdsToJSON() {
 }
 
 bool MediaKeySession::ParseClearKeyInitializationData(const std::string& initData, std::string* output)
+{
+   bool result = false;
+   const char identifier[] = { '"', 'k', 'i', 'd', 's', '"', ':', '\0' };
+
+   /* keyids type */
+   if(initData.find(identifier) != std::string::npos) {
+       result = ParseKeyIdsInitData(initData, output) > 0 ? true : false;
+   }
+   else {
+       result = ParseCENCInitData(initData, output) > 0 ? true : false;
+   }
+   return result;
+}
+
+using JSONStringArray = Core::JSON::ArrayType<Core::JSON::String>;
+
+bool MediaKeySession::ParseKeyIdsInitData(const std::string& initData, std::string* output) {
+    class InitData : public Core::JSON::Container {
+    public:
+        InitData() : Core::JSON::Container() , KeyIds() {
+            Add(_T("kids"), &KeyIds);
+        }
+        virtual ~InitData() {
+        }
+
+    public:
+        JSONStringArray KeyIds;
+    } jsonData;
+
+    output->clear();
+
+    jsonData.FromString(initData);
+    JSONStringArray::ConstIterator index(static_cast<const InitData&>(jsonData).KeyIds.Elements());
+
+    TRACE_L1("Clearkey CDMi: initdata keyid(s):");
+    while (index.Next() == true) {
+        TRACE_L1("%s", index.Current().Value().c_str());
+        std::string keyId = media::Base64Decode(index.Current().Value());
+        m_kids.insert(keyId);
+    }
+
+    return m_kids.size() > 0 ? true : false;
+}
+
+bool MediaKeySession::ParseCENCInitData(const std::string& initData, std::string* output)
 {
     BufferReader input(reinterpret_cast<const uint8_t*>(initData.data()), initData.length());
 
