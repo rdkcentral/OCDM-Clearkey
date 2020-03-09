@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include "cdmi.h"
 #include "MediaSession.h"
 
 namespace CDMi {
