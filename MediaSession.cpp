@@ -23,6 +23,8 @@
 #else
 #include <openssl/aes.h>
 #include <openssl/evp.h>
+#include <openssl/modes.h>
+#include <openssl/opensslv.h>
 #endif
 #include <pthread.h>
 #include <sstream>
@@ -228,7 +230,11 @@ CDMi_RESULT MediaKeySession::Decrypt(
     AES_KEY aesKey;
     AES_set_encrypt_key(reinterpret_cast<const unsigned char*>(key), strlen(key) * 8, &aesKey);
 
+#if OPENSSL_VERSION_NUMBER > 0x10100000L
+    CRYPTO_ctr128_encrypt(reinterpret_cast<const unsigned char*>(f_pbData), out, f_cbData, &aesKey, ivec, ecount_buf, &block_offset, (block128_f)AES_encrypt);
+#else
     AES_ctr128_encrypt(reinterpret_cast<const unsigned char*>(f_pbData), out, f_cbData, &aesKey, ivec, ecount_buf, &block_offset);
+#endif
 #endif
 
     /* Return clear content */

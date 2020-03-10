@@ -15,7 +15,8 @@
  */
 #pragma once
 
-#include "cdmi.h"
+//#include "cdmi.h"
+#include <interfaces/IDRM.h>
 #include "JSONWebKey.h"
 #include "KeyPairs.h"
 
